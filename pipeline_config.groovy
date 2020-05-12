@@ -18,8 +18,8 @@ application_environments{
   library sources configured.
 */
 libraries{
-    github
-    sonarqube
+    //github
+    //sonarqube
     //maven
     docker
     // library configurations are determined by
