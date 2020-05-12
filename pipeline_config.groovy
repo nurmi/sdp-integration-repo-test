@@ -20,8 +20,8 @@ application_environments{
 libraries{
     github
     sonarqube
-    maven
-    //docker
+    //maven
+    docker
     // library configurations are determined by
     // the specific library implementation
     //openshift{
