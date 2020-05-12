@@ -20,11 +20,12 @@ application_environments{
 libraries{
     github
     sonarqube
-    docker
+    maven
+    //docker
     // library configurations are determined by
     // the specific library implementation
-    openshift{
-        url = "https://example.openshift.com"
-        cred_id = "openshift"
-    }
+    //openshift{
+    //    url = "https://example.openshift.com"
+    //   cred_id = "openshift"
+    //}
 }
