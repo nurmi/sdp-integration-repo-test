@@ -4,6 +4,10 @@
 */
 import groovy.json.*
 
+def parse_json(input_file) {
+    return readJSON(file: "${input_file}")
+}
+
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
@@ -20,13 +24,13 @@ void call(){
 		  def input_image_json = JsonOutput.toJson(input_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-		  def new_image = readJSON file: "new_image.json"
 
+		  def new_image = parse_json("new_image.json")
 		  Boolean done = false
  		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
 		  while(!done) {
 		    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
-		    def new_image_check = readJSON file: "new_image_check.json"
+		    def new_image_check = parse_json("new_image_check.json")
 		    sh "echo ${new_image_check.analysis_status}"
 		    if (new_image_check.analysis_status == "analyzed") {
 		      done = true
