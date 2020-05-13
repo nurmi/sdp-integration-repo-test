@@ -7,8 +7,9 @@
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
-        String anchore_engine_url = config.anchore_engine_url ?: null
+        String anchore_engine_base_url = config.anchore_engine_url ?: null
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
+                String url = "${anchore_engine_base_url}/system/status"
 		sh "echo curl -u ${user} -p ${pass} ${url}"
 		sh "curl -u ${user} -p ${pass} ${url}"		
 	}  	 
