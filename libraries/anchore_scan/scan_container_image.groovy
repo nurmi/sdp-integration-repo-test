@@ -19,9 +19,24 @@ void call(){
 		  def new_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
 		  def new_image_json = JsonOutput.toJson(new_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${new_image_json}'"		  
-		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${new_image_json}'"
-                  //sh "docker build ${img.context} -t ${img.registry}/${img.repo}:${img.tag}"
-                  //sh "docker push ${img.registry}/${img.repo}:${img.tag}"
+		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${new_image_json}' > new_image.json"
+		  def new_image = readJSON(file: "new_image.json")
+
+		  Boolean done = false
+ 		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
+		  while(!done) {
+		    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
+		    def new_image_check = readJSON(file: "new_image_check.json")
+		    sh "echo ${new_image_check.analysis_status}"
+		    if (new_image_check.analysis_status == "analyzed") {
+		      done = true
+		    } else {
+		      attempts++
+		      if (attempts > 10) {
+		        done = true
+	              }
+		    }
+		  }  
                 }
 	}  	 
       }
