@@ -7,7 +7,11 @@
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
-		sh "echo ANCHORE!"
-        }
+        String anchore_engine_url = config.anchore_engine_url ?: null
+        withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
+		sh "echo curl -u ${user} -p ${pass} ${url}"
+		sh "curl -u ${user} -p ${pass} ${url}"		
+	}  	 
+      }
     }
   }
