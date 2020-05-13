@@ -16,10 +16,10 @@ void call(){
                 def images = get_images_to_build()
                 images.each{ img ->
 		  url = "${anchore_engine_base_url}/images"
-		  def new_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
-		  def new_image_json = JsonOutput.toJson(new_image)
-		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${new_image_json}'"		  
-		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${new_image_json}' > new_image.json"
+		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
+		  def input_image_json = JsonOutput.toJson(new_image)
+		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
+		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
 		  def new_image = readJSON(file: "new_image.json")
 
 		  Boolean done = false
