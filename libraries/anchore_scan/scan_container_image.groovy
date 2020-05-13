@@ -18,7 +18,8 @@ void call(){
 		  url = "${anchore_engine_base_url}/images"
 		  def new_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
 		  def new_image_json = JsonOutput.toJson(new_image)
-		  sh "echo curl -u -H 'content-type: application/json' -X POST '${user}:${pass}' ${url} -d '${new_image_json}'"
+		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST '${user}:${pass}' ${url} -d '${new_image_json}'"
+		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST '${user}:${pass}' ${url} -d '${new_image_json}'"		  
                   //sh "docker build ${img.context} -t ${img.registry}/${img.repo}:${img.tag}"
                   //sh "docker push ${img.registry}/${img.repo}:${img.tag}"
                 }
