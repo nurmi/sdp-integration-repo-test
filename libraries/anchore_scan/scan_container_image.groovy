@@ -9,9 +9,9 @@ void call(){
     node{
         String anchore_engine_base_url = config.anchore_engine_url ?: null
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
-                String url = "${anchore_engine_base_url}/system/status"
-		sh "echo curl -u ${user} -p ${pass} ${url}"
-		sh "curl -u ${user} -p ${pass} ${url}"		
+                String url = "${anchore_engine_base_url}/system/"
+		sh "echo curl -u '${user}:${pass}' ${url}"
+		sh "curl -u '${user}:${pass}' ${url}"		
 	}  	 
       }
     }
