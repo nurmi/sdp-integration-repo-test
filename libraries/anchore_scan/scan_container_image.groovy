@@ -17,7 +17,7 @@ void call(){
                 images.each{ img ->
 		  url = "${anchore_engine_base_url}/images"
 		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
-		  def input_image_json = JsonOutput.toJson(new_image)
+		  def input_image_json = JsonOutput.toJson(input_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
 		  def new_image = readJSON(file: "new_image.json")
