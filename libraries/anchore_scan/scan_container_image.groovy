@@ -23,7 +23,7 @@ def add_image(config, user, pass, img) {
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
     def new_image = this.parse_json("new_image.json")[0]
   } catch (any) {
-    error "Unable to add image to Anchore Engine - exception ${any}"
+    println ("Unable to add image to Anchore Engine - exception ${any}")
     throw any
   }
   
