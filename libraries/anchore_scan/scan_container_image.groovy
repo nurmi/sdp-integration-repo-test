@@ -20,7 +20,7 @@ def add_image(config, user, pass, img) {
   def input_image_json = JsonOutput.toJson(input_image)
 
   try {
-    url = "${anchore_engine_base_url}/imagessss"
+    url = "${anchore_engine_base_url}/images"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o new_image.json ${url} -d '${input_image_json}'"
     def new_image = this.parse_json("new_image.json")[0]
     image_digest = new_image.imageDigest
