@@ -84,9 +84,12 @@ void call(){
 		  if (success) {
 		    println("Image vulnerabilities report generated")
 		    //println("${vulnerabilities}")
+		    vulnerability_result = "Anchore Image Scan Vulnerability Results\n*****\n"
 		    vulnerabilities.each {
-		      println("${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}")
+		      vulnerability_result += "${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}\n"
+		      //println("${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}")
 		    }
+		    println(vulnerability_result)
 		  }
                 }
 	}  	 
