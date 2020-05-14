@@ -73,6 +73,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
 }
 
 void call(){
+
   if (!config.anchore_engine_url) {
     error "The anchore_engine_url parameter must be set in the library configuration."
   } else if (!config.fred) {
@@ -101,9 +102,12 @@ void call(){
 		      }
 		    } else {
 		      vulnerability_result += "No vulnerabilities detected\n"
-		      if (!archive_only) {
+		    }
+
+                    if (!archive_only) {
 		        println(vulnerability_result)
-                      }
+                    }
+		    
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		  }
