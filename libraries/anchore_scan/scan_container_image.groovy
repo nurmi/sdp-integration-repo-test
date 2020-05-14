@@ -14,7 +14,8 @@ def add_image(config, user, pass, img) {
   Boolean done = false
   Boolean success = false
   def ret_image = null
-  String url 
+  String url
+  String image_digest
   def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
   def input_image_json = JsonOutput.toJson(input_image)
 
@@ -22,14 +23,13 @@ def add_image(config, user, pass, img) {
     url = "${anchore_engine_base_url}/imagessss"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
     def new_image = this.parse_json("new_image.json")[0]
-    sh "echo HERE"
+    image_digest = new_image.imageDigest
   } catch (any) {
-    sh "echo THERE"  
     println ("Unable to add image to Anchore Engine - exception ${any}")
     throw any
   }
   
-  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
+  url = "${anchore_engine_base_url}/images/${image_digest}"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
       sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
