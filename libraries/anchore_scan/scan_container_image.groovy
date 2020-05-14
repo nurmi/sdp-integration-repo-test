@@ -165,7 +165,7 @@ void call(){
                     if (!archive_only) {
 		        println(vulnerability_result)
                     }
-
+                    /*
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
@@ -177,6 +177,7 @@ void call(){
 		    if (!archive_only) {
 		      println(evaluation_result)
 	            }
+		    */
 		    
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
