@@ -14,6 +14,7 @@ void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
         String anchore_engine_base_url = config.anchore_engine_url ?: null
+	Int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 String url = "${anchore_engine_base_url}/system/"
 		sh "echo curl -u '${user}:${pass}' ${url}"
@@ -30,19 +31,17 @@ void call(){
 		  def new_image = this.parse_json("new_image.json")[0]
 		  Boolean done = false
  		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
-		  while(!done) {
-		    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
-		    def new_image_check = this.parse_json("new_image_check.json")[0]
-		    sh "echo ${new_image_check.analysis_status}"
-		    if (new_image_check.analysis_status == "analyzed") {
-		      done = true
-		    } else {
-		      attempts++
-		      if (attempts > 10) {
+		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
+  		    while(!done) {
+		      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
+		      def new_image_check = this.parse_json("new_image_check.json")[0]
+		      sh "echo ${new_image_check.analysis_status}"
+		      if (new_image_check.analysis_status == "analyzed") {
 		        done = true
-	              }
-		    }
-		  }  
+		      } else {
+		        sh "echo image not yet analyzed (${new_image_check.analysis_status})"
+		    }   
+		  }
                 }
 	}  	 
       }
