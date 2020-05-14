@@ -10,7 +10,9 @@ def parse_json(input_file) {
     //return (ret)
 }
 
-def add_image(anchore_engine_base_url, img) {
+def add_image(config, user, pass, img) {
+    		  String anchore_engine_base_url = config.anchore_engine_url
+		  int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
                   Boolean done = false
 		  Boolean success = false
 		  
@@ -44,16 +46,16 @@ def add_image(anchore_engine_base_url, img) {
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
-        String anchore_engine_base_url = config.anchore_engine_url ?: null
-	int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
+        //String anchore_engine_base_url = config.anchore_engine_url ?: null
+	//int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
-                String url = "${anchore_engine_base_url}/system/"
-		sh "echo curl -u '${user}:${pass}' ${url}"
-		sh "curl -u '${user}:${pass}' ${url}"
+                //String url = "${anchore_engine_base_url}/system/"
+		//sh "echo curl -u '${user}:${pass}' ${url}"
+		//sh "curl -u '${user}:${pass}' ${url}"
 
                 def images = get_images_to_build()
                 images.each{ img ->
-		  success = this.add_image(anchore_engine_base_url, img)
+		  success = this.add_image(config, user, pass, img)
 		  if (success) {
 		    sh "echo Image analysis successful"
 		  }
