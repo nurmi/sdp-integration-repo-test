@@ -39,7 +39,7 @@ void call(){
 		      if (new_image_check.analysis_status == "analyzed") {
 		        done = true
 		      } else {
-		        sh "echo image not yet analyzed (${new_image_check.analysis_status})"
+		        sh "echo image not yet analyzed - status is ${new_image_check.analysis_status}"
 		      }
 		    }   
 		  }
