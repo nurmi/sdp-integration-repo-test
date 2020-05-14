@@ -32,7 +32,7 @@ def add_image(config, user, pass, img) {
   
 
 try {
-  url = "${anchore_engine_base_url}/images/${image_digest}/blargh"
+  url = "${anchore_engine_base_url}/images/${image_digest}"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
       try {
@@ -58,7 +58,9 @@ try {
     }
   }
  } catch (any) {
-   println("ERRO")
+   println("Timed out or error waiting for image to reach analyzed state")
+   success = false
+   ret_image = null
  }
  return [success, ret_image]
 }
@@ -74,7 +76,6 @@ def get_image_vulnerabilities(config, user, pass, image) {
     http_result = "anchore_results/anchore_vulnerabilities.json"
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
-
     vulnerabilities = this.parse_json("anchore_result_vulnerabilities.json")
   } catch (any) {
     throw any
@@ -87,17 +88,21 @@ def get_image_vulnerabilities(config, user, pass, image) {
 }
 
 def initialize_workspace(config) {
-  sh "mkdir -p anchore_results"
-  return(true)
-}
-
-void call(){
-
   if (!config.anchore_engine_url) {
     error "The anchore_engine_url parameter must be set in the library configuration."
   } else if (!config.cred) {
     error "Credentials for accessing Anchore Engine must be set in the library configuration."
   }
+
+  // TODO add more input validation
+  
+  sh "mkdir -p anchore_results"
+  
+  return(true)
+}
+
+void call(){
+  this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
     node{
@@ -105,8 +110,6 @@ void call(){
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
 		def archive_only = config.archive_only ?: false
-
-		this.initialize_workspace(config)
 
                 images.each { img ->
 		  (success, new_image) = this.add_image(config, user, pass, img)
