@@ -8,7 +8,7 @@ def parse_json(input_file) {
     return readJSON(file: "${input_file}")
 }
 
-def add_image(config, user, pass, img) {
+def add_image(config, user, pass, input_image_fulltag) {
   String anchore_engine_base_url = config.anchore_engine_url
   int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
   Boolean done = false
@@ -16,7 +16,7 @@ def add_image(config, user, pass, img) {
   def ret_image = null
   String url
   String image_digest
-  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
+  def input_image = [tag: "${input_image_fulltag}"]
   def input_image_json = JsonOutput.toJson(input_image)
 
   try {
@@ -76,7 +76,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
     http_result = "anchore_results/anchore_vulnerabilities.json"
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
-    vulnerabilities = this.parse_json("anchore_result_vulnerabilities.json")
+    vulnerabilities = this.parse_json(http_result)
   } catch (any) {
     throw any
   }
@@ -85,6 +85,32 @@ def get_image_vulnerabilities(config, user, pass, image) {
     ret_vulnerabilities = vulnerabilities.vulnerabilities
   }
   return [success, ret_vulnerabilities]
+}
+
+def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
+  String anchore_engine_base_url = config.anchore_engine_url
+  String anchore_policy_bundle_file = config.policy_bundle ?: null
+  Boolean success = false
+  def evaluations = null
+  ArrayList ret_evaluations = null
+  String url = null
+  def policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
+  String policy_bundle_id = policy_bundle.id
+  String image_digest = image.imageDigest
+  
+  try {
+    http_result = "anchore_results/anchore_policy_evaluations.json"
+    url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=false&tag=${input_image_fulltag}"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
+    evaluations = this.parse_json(http_result)
+  } catch (any) {
+    throw any
+  }
+  if (evaluations) {
+    success = true
+    ret_evaluations = evaluations
+  }
+  return [success, ret_evaluations]
 }
 
 def initialize_workspace(config) {
@@ -112,7 +138,8 @@ void call(){
 		def archive_only = config.archive_only ?: false
 
                 images.each { img ->
-		  (success, new_image) = this.add_image(config, user, pass, img)
+		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
+		  (success, new_image) = this.add_image(config, user, pass, input_image_fulltag)
 		  if (success) {
 		    println("Image analysis successful")
 		  } else {
@@ -134,6 +161,18 @@ void call(){
                     if (!archive_only) {
 		        println(vulnerability_result)
                     }
+
+                    (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
+		    if (success) {
+		      println("Image policy evaluation report generation complete")
+		      evaluation_result = "Anchore Image Scan Policy Evaluation Results\n*****\n"
+		      evaluation_result += "${evaluations}"
+		    } else {
+		      evaluation_result = "No evaluations to report\n"
+		    }
+		    if (!archive_only) {
+		      println(evaluation_result)
+	            }
 		    
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
