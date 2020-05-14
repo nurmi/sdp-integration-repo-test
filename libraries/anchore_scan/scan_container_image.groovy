@@ -86,6 +86,7 @@ void call(){
 		    //println("${vulnerabilities}")
 		    vulnerabilities.each {
 		      println("${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}")
+		    }
 		  }
                 }
 	}  	 
