@@ -81,7 +81,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
         ret_vulnerabilities = vulnerabilities.vulnerabilities
     	success = true
     } else {
-        error "ERROR response from Anchore Engine"
+        throw new Exception ("ERROR response from Anchore Engine")
     }
   } catch (any) {
     if ( (new File(http_result)).exists()) {
