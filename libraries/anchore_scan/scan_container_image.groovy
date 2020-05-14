@@ -159,9 +159,15 @@ void call(){
 		    vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
 		    vulnerability_result += "****************************************\n\n"
 		    if (vulnerabilities) {
-		      vulnerability_result += "VulnID\tSeverity\tPackage\tVersion\tType\tFix Available\tLink"
+		      vulnerability_result += "VulnID".padRight(16, ' ')+"\t" + "Severity".padRight(16, ' ') + "\t" + "Package".padRight(32, ' ') + "\t" + "Type".padRight(8, ' ') + "\t" + "Fix Available".padRight(16, ' ') + "\tLink\n"
 		      vulnerabilities.each { vuln ->
-		        vulnerability_result += "${vuln.vuln}\t${vuln.severity}\t${vuln.package_name}\t${vuln.package_version}\t${vuln.package_type}\t${vuln.fix}\t${vuln.url}\n"
+		      	vid = vuln.vuln.padRight(16, ' ')
+			vsev = vuln.severity.padRight(16, ' ')
+			vpkg = vuln.package.padRight(32, ' ')
+			vtype = vuln.package_type.padRight(8, ' ')
+			vfix = vuln.package_type.padRight(16, ' ')
+			vurl = vuln.url
+		        vulnerability_result += "${vid}\t${vsev}\t${vpkg}\t${vtype}\t${vfix}\t${vurl}\n"
 		      }
 		    } else {
 		      vulnerability_result += "No vulnerabilities detected\n"
