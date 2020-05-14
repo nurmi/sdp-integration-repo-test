@@ -18,9 +18,13 @@ def add_image(config, user, pass, img) {
   def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
   def input_image_json = JsonOutput.toJson(input_image)
 
-  url = "${anchore_engine_base_url}/imagessss"
-  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-  def new_image = this.parse_json("new_image.json")[0]
+  try {
+    url = "${anchore_engine_base_url}/imagessss"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
+    def new_image = this.parse_json("new_image.json")[0]
+  } catch (any) {
+    error "Unable to add image to Anchore Engine - exception ${any}"
+  }
   
   url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
