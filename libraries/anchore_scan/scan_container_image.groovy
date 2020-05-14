@@ -77,8 +77,12 @@ def get_image_vulnerabilities(config, user, pass, image) {
     url = "${anchore_engine_base_url}/images/${image.imageDigest}dd/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}' 2>curl.err"
     vulnerabilities = this.parse_json(http_result)
-    ret_vulnerabilities = vulnerabilities["vulnerabilities"]
-    success = true
+    if (vulnerabilities.containsKey("vulnerabilities")) {
+        ret_vulnerabilities = vulnerabilities.vulnerabilities
+    	success = true
+    } else {
+        error "ERROR response from Anchore Engine"
+    }
   } catch (any) {
     if ( (new File(http_result)).exists()) {
       sh "mv ${http_result} anchore_results/last_error.response"
