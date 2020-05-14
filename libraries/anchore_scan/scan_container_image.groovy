@@ -44,7 +44,13 @@ def add_image(config, user, pass, img) {
 }
 
 def get_image_vulnerabilities(config, user, pass, image) {
-    return [true, null]
+  String anchore_engine_base_url = config.anchore_engine_url
+  success = false
+  url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
+  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > new_image_vulnerabilities.json"
+  vulnerabilities = this.parse_json("new_image_vulnerabilities.json")
+  success = true
+  return [success, vulnerabilities]
 }
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
