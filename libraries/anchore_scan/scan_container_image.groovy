@@ -46,10 +46,18 @@ def add_image(config, user, pass, img) {
 def get_image_vulnerabilities(config, user, pass, image) {
   String anchore_engine_base_url = config.anchore_engine_url
   success = false
-  url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
-  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > new_image_vulnerabilities.json"
-  vulnerabilities = this.parse_json("new_image_vulnerabilities.json")
-  success = true
+  vulnerabilities = null
+  try {
+    url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > anchore_result_vulnerabilities.json"
+    archiveArtifacts 'anchore_result_vulnerabilities.json'
+    vulnerabilities = this.parse_json("anchore_result_vulnerabilities.json")
+  } catch (any) {
+    throw any
+  }
+  if (vulnerabilities && vulnerabilities.vulnerabilities) {
+    success = true
+  }
   return [success, vulnerabilities]
 }
 void call(){
