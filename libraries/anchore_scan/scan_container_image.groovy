@@ -159,13 +159,13 @@ void call(){
 		    vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
 		    vulnerability_result += "****************************************\n\n"
 		    if (vulnerabilities) {
-		      vulnerability_result += "VulnID".padRight(16, ' ')+"\t" + "Severity".padRight(16, ' ') + "\t" + "Package".padRight(32, ' ') + "\t" + "Type".padRight(8, ' ') + "\t" + "Fix Available".padRight(16, ' ') + "\tLink\n"
+		      vulnerability_result += "VulnID".padRight(16, ' ')+"\t" + "Severity".padRight(12, ' ') + "\t" + "Package".padRight(30, ' ') + "\t" + "Type".padRight(6, ' ') + "\t" + "Fix Available".padRight(12, ' ') + "\tLink\n"
 		      vulnerabilities.each { vuln ->
 		      	vid = vuln.vuln.padRight(16, ' ')
-			vsev = vuln.severity.padRight(16, ' ')
-			vpkg = vuln.package.padRight(32, ' ')
-			vtype = vuln.package_type.padRight(8, ' ')
-			vfix = vuln.package_type.padRight(16, ' ')
+			vsev = vuln.severity.padRight(12, ' ')
+			vpkg = vuln.package.padRight(30, ' ') 
+			vtype = vuln.package_type.padRight(6, ' ')
+			vfix = vuln.fix.padRight(12, ' ')
 			vurl = vuln.url
 		        vulnerability_result += "${vid}\t${vsev}\t${vpkg}\t${vtype}\t${vfix}\t${vurl}\n"
 		      }
