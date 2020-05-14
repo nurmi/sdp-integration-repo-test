@@ -88,7 +88,8 @@ def get_image_vulnerabilities(config, user, pass, image) {
 }
 
 def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
-  String anchore_engine_base_url = config.anchore_engine_url
+  println("HERE")
+String anchore_engine_base_url = config.anchore_engine_url
   String anchore_policy_bundle_file = config.policy_bundle ?: null
   Boolean success = false
   def evaluations = null
@@ -96,7 +97,7 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   String url = null
   String policy_bundle_id = null
   def policy_bundle = null
-  println("HERE")
+
   if (anchore_policy_bundle_file) {
     policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
     policy_bundle_id = policy_bundle.id
