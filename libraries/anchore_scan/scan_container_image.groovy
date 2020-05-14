@@ -21,33 +21,46 @@ def add_image(config, user, pass, img) {
 
   try {
     url = "${anchore_engine_base_url}/images"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o new_image.json ${url} -d '${input_image_json}'"
-    def new_image = this.parse_json("new_image.json")[0]
+    http_result = "new_anchore_image.json"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o ${http_result} ${url} -d '${input_image_json}'"
+    def new_image = this.parse_json(http_result)[0]
     image_digest = new_image.imageDigest
   } catch (any) {
     println ("Unable to add image to Anchore Engine - exception ${any}")
     throw any
   }
   
+
+try {
   url = "${anchore_engine_base_url}/images/${image_digest}"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
-      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o new_image_check.json ${url}"
-      def new_image_check = this.parse_json("new_image_check.json")[0]
-      if (new_image_check.analysis_status == "analyzed") {
-        done = true
-        success = true
-        ret_image = new_image_check
-      } else if ( new_image_check.analysis_status == "analysis_failed") {
-        done = true
+      try {
+        http_result = "new_anchore_image_check.json"
+        sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o ${http_result} ${url}"
+        def new_image_check = this.parse_json(http_result)[0]
+        if (new_image_check.analysis_status == "analyzed") {
+          done = true
+          success = true
+          ret_image = new_image_check
+        } else if ( new_image_check.analysis_status == "analysis_failed") {
+          done = true
+          success = false
+        } else {
+          println("image not yet analyzed - status is ${new_image_check.analysis_status}")
+          sleep 5
+        }
+      } catch (any) {
         success = false
-      } else {
-        println("image not yet analyzed - status is ${new_image_check.analysis_status}")
-        sleep 5
-      }
+	done = true
+	throw any
+      } 
     }
   }
-  return [success, ret_image]
+ } catch (any) {
+   println("ERRO")
+ }
+ return [success, ret_image]
 }
 
 def get_image_vulnerabilities(config, user, pass, image) {
