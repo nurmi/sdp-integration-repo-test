@@ -37,6 +37,7 @@ def add_image(config, user, pass, img) {
 			success = false
 		      } else {
 		        sh "echo image not yet analyzed - status is ${new_image_check.analysis_status}"
+			sleep 5
 		      }
 		    }
 		  }
@@ -46,7 +47,7 @@ def add_image(config, user, pass, img) {
 def get_image_vulnerabilities(config, user, pass, image) {
   String anchore_engine_base_url = config.anchore_engine_url
   success = false
-  vulnerabilities = null
+  vulnerabilities = ret_vulnerabilities = null
   try {
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > anchore_result_vulnerabilities.json"
@@ -57,8 +58,9 @@ def get_image_vulnerabilities(config, user, pass, image) {
   }
   if (vulnerabilities && vulnerabilities.vulnerabilities) {
     success = true
+    ret_vulnerabilities = vulnerabilities.vulnerabilities
   }
-  return [success, vulnerabilities]
+  return [success, ret_vulnerabilities]
 }
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
@@ -74,14 +76,16 @@ void call(){
                 images.each{ img ->
 		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
-		    sh "echo Image analysis successful"
-		    println("${new_image}")
+		    println("Image analysis successful")
+		    //println("${new_image}")
 		  }
 
 		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
-		    sh "echo Image vulnerabilities report generated"
-		    println("${vulnerabilities}")
+		    println("Image vulnerabilities report generated")
+		    //println("${vulnerabilities}")
+		    vulnerabilities.each {
+		      println("${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}")
 		  }
                 }
 	}  	 
