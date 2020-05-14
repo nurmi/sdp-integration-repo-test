@@ -67,11 +67,13 @@ void call(){
 		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
 		    sh "echo Image analysis successful"
+		    println("${new_image}")
 		  }
 
 		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
 		    sh "echo Image vulnerabilities report generated"
+		    println("${vulnerabilities}")
 		  }
                 }
 	}  	 
