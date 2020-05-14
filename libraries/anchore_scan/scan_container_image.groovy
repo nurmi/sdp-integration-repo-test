@@ -40,11 +40,11 @@ def add_image(config, user, pass, img) {
 		      }
 		    }
 		  }
-  return(success, ret_image)
+  return [success, ret_image]
 }
 
 def get_image_vulnerabilities(config, user, pass, image) {
-    return(true, [])
+    return [true, null]
 }
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
@@ -58,12 +58,12 @@ void call(){
 
                 def images = get_images_to_build()
                 images.each{ img ->
-		  success, new_image = this.add_image(config, user, pass, img)
+		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
 		    sh "echo Image analysis successful"
 		  }
 
-		  success, vulnerabilities = this.get_image_vulnerabilities(config, user, pass, new_image)
+		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
 		    sh "echo Image vulnerabilities report generated"
 		  }
