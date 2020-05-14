@@ -102,6 +102,7 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
     policy_bundle_id = policy_bundle.id
   }
   String image_digest = image.imageDigest
+  String image_id = image.image_detail[0].imageId
   
   try {
     http_result = "anchore_results/anchore_policy_evaluations.json"
@@ -113,7 +114,7 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   }
   if (evaluations) {
     success = true
-    ret_evaluations = evaluations[0]["${image_digest}"]["${input_image_fulltag}"]["detail"]["result"]["result"]
+    ret_evaluations = evaluations[0]["${image_digest}"]["${input_image_fulltag}"]["detail"]["result"]["result"][0]["${image_id}"]
   }
   return [success, ret_evaluations]
 }
