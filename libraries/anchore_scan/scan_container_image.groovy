@@ -14,7 +14,7 @@ void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
         String anchore_engine_base_url = config.anchore_engine_url ?: null
-	Int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
+	int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 String url = "${anchore_engine_base_url}/system/"
 		sh "echo curl -u '${user}:${pass}' ${url}"
