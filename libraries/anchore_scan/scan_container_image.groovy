@@ -6,8 +6,6 @@ import groovy.json.*
 
 def parse_json(input_file) {
     return readJSON(file: "${input_file}")
-    //def ret = [analysis_status: "analyzed", imageDigest: 'sha256:a0e1f3334315165b1e75ee28d62f48b1623a8ad31ad3c9b99f964ed750cbd1ba']
-    //return (ret)
 }
 
 def add_image(config, user, pass, img) {
@@ -16,13 +14,14 @@ def add_image(config, user, pass, img) {
                   Boolean done = false
 		  Boolean success = false
 		  
+		  
                   url = "${anchore_engine_base_url}/images"
 		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
 		  def input_image_json = JsonOutput.toJson(input_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
 		  def new_image = this.parse_json("new_image.json")[0]
-
+		  def ret_image = null
  		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
 		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
   		    while(!done) {
@@ -32,6 +31,7 @@ def add_image(config, user, pass, img) {
 		      if (new_image_check.analysis_status == "analyzed") {
 		        done = true
 			success = true
+			ret_image = new_image_check
 		      } else if ( new_image_check.analysis_status == "analysis_failed") {
 		        done = true
 			success = false
@@ -40,9 +40,12 @@ def add_image(config, user, pass, img) {
 		      }
 		    }
 		  }
-  return(success)
+  return(success, ret_image)
 }
 
+def get_image_vulnerabilities(config, user, pass, image) {
+    return(true, [])
+}
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
@@ -55,9 +58,14 @@ void call(){
 
                 def images = get_images_to_build()
                 images.each{ img ->
-		  success = this.add_image(config, user, pass, img)
+		  success, new_image = this.add_image(config, user, pass, img)
 		  if (success) {
 		    sh "echo Image analysis successful"
+		  }
+
+		  success, vulnerabilities = this.get_image_vulnerabilities(config, user, pass, new_image)
+		  if (success) {
+		    sh "echo Image vulnerabilities report generated"
 		  }
                 }
 	}  	 
