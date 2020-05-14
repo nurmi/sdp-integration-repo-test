@@ -21,7 +21,7 @@ def add_image(config, user, pass, img) {
 
   try {
     url = "${anchore_engine_base_url}/imagessss"
-    sh "curl -vvv -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o new_image.json ${url} -d '${input_image_json}'"
     def new_image = this.parse_json("new_image.json")[0]
     image_digest = new_image.imageDigest
   } catch (any) {
@@ -32,7 +32,7 @@ def add_image(config, user, pass, img) {
   url = "${anchore_engine_base_url}/images/${image_digest}"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
-      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
+      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o new_image_check.json ${url}"
       def new_image_check = this.parse_json("new_image_check.json")[0]
       if (new_image_check.analysis_status == "analyzed") {
         done = true
