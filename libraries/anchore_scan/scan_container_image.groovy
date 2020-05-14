@@ -94,8 +94,12 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   def evaluations = null
   ArrayList ret_evaluations = null
   String url = null
-  def policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
-  String policy_bundle_id = policy_bundle.id
+  String policy_bundle_id = null
+  def policy_bundle = null
+  if (anchore_policy_bundle_file) {
+    policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
+    policy_bundle_id = policy_bundle.id
+  }
   String image_digest = image.imageDigest
   
   try {
