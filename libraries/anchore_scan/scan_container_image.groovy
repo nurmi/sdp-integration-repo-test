@@ -76,7 +76,7 @@ void call(){
 
   if (!config.anchore_engine_url) {
     error "The anchore_engine_url parameter must be set in the library configuration."
-  } else if (!config.fred) {
+  } else if (!config.cred) {
     error "Credentials for accessing Anchore Engine must be set in the library configuration."
   }
 
@@ -84,7 +84,7 @@ void call(){
     node{
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
-                images.each{ img ->
+                images.each { img ->
 		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
 		    println("Image analysis successful")
@@ -97,8 +97,8 @@ void call(){
 		    println("Image vulnerabilities report generation complete")
 		    vulnerability_result = "Anchore Image Scan Vulnerability Results\n*****\n"
 		    if (vulnerabilities) {
-		      vulnerabilities.each {
-		        vulnerability_result += "${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}\n"
+		      vulnerabilities.each { vuln ->
+		        vulnerability_result += "${vuln.vuln} ${vuln.severity} ${vuln.package_name} ${vuln.package_version} ${vuln.package_type}\n"
 		      }
 		    } else {
 		      vulnerability_result += "No vulnerabilities detected\n"
