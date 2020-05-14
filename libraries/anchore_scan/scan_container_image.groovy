@@ -74,7 +74,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
   
   try {
     http_result = "anchore_results/anchore_vulnerabilities.json"
-    url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
+    url = "${anchore_engine_base_url}/images/${image.imageDigest}dd/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' --stderr curl.err -o ${http_result} '${url}'"
     vulnerabilities = this.parse_json(http_result)
   } catch (any) {
