@@ -108,15 +108,15 @@ String anchore_engine_base_url = config.anchore_engine_url
   try {
     http_result = "anchore_results/anchore_policy_evaluations.json"
     url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=false&tag=${input_image_fulltag}"
-    println("URL: ${url}")
-    //sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
-    String cmd = "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
-    println(cmd)
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
+    /*
+    String cmd = "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
     def sout = new StringBuilder(), serr = new StringBuilder()
     def proc = cmd.execute()
     proc.consumeProcessOutput(sout, serr)
     proc.waitForOrKill(1000)
     println "out> $sout err> $serr"
+    */
     
     evaluations = this.parse_json(http_result)
   } catch (any) {
