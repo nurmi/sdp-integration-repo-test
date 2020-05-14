@@ -114,7 +114,7 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   }
   if (evaluations) {
     success = true
-    ret_evaluations = evaluations[0]["${image_digest}"]["${input_image_fulltag}"]["detail"]["result"]["result"][0]["${image_id}"]
+    ret_evaluations = evaluations[0]["${image_digest}"]["${input_image_fulltag}"]["detail"]["result"]["result"][0]["${image_id}"]["result"]
   }
   return [success, ret_evaluations]
 }
