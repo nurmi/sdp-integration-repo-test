@@ -89,7 +89,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
 
 def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   String anchore_engine_base_url = config.anchore_engine_url
-  String anchore_policy_bundle_file = config.policy_bundle ?: null
+  String anchore_policy_bundle_file = config.policy_bundle ?: ""
   Boolean success = false
   def evaluations = null
   ArrayList ret_evaluations = null
