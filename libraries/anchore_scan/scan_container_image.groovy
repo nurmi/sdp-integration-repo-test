@@ -78,12 +78,12 @@ def get_image_vulnerabilities(config, user, pass, image) {
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' --stderr curl.err -o ${http_result} '${url}'"
     vulnerabilities = this.parse_json(http_result)
   } catch (any) {
-    if (File(http_result).exists()) {
+    if ( (new File(http_result)).exists()) {
       sh "mv ${http_result} anchore_results/last_error.response"
     }
     throw any
   } finally {
-    if (File("curl.err").exists()) {
+    if ( (new File("curl.err")).exists()) {
       sh "mv curl.err anchore_results/last_error.curl"
     }
   }
@@ -117,12 +117,12 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' --stderr curl.err -o ${http_result} '${url}'"
     evaluations = this.parse_json(http_result)
   } catch (any) {
-    if (File(http_result).exists()) {
+    if ( (new File(http_result)).exists()) {
       sh "mv ${http_result} anchore_results/last_error.response"
     }
     throw any
   } finally {
-    if (File("curl.err").exists()) {
+    if ( (new File("curl.err")).exists()) {
       sh "mv curl.err anchore_results/last_error.curl"
     }
   }
