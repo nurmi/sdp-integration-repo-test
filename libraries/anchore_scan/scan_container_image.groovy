@@ -21,7 +21,7 @@ def add_image(config, user, pass, img) {
 
   try {
     url = "${anchore_engine_base_url}/imagessss"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
+    sh "curl -vvv -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
     def new_image = this.parse_json("new_image.json")[0]
     image_digest = new_image.imageDigest
   } catch (any) {
