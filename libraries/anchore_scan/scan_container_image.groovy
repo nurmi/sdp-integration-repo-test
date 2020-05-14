@@ -10,9 +10,17 @@ def parse_json(input_file) {
     //return (ret)
 }
 
-def add_image(new_image) {
-		  Boolean done = false
+def add_image(anchore_engine_base_url, img) {
+                  Boolean done = false
 		  Boolean success = false
+		  
+                  url = "${anchore_engine_base_url}/images"
+		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
+		  def input_image_json = JsonOutput.toJson(input_image)
+		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
+		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
+		  def new_image = this.parse_json("new_image.json")[0]
+
  		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
 		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
   		    while(!done) {
@@ -45,14 +53,7 @@ void call(){
 
                 def images = get_images_to_build()
                 images.each{ img ->
-		  url = "${anchore_engine_base_url}/images"
-		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
-		  def input_image_json = JsonOutput.toJson(input_image)
-		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
-		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-		  def new_image = this.parse_json("new_image.json")[0]
-
-		  success = this.add_image(new_image)
+		  success = this.add_image(anchore_engine_base_url, img)
 		  if (success) {
 		    sh "echo Image analysis successful"
 		  }
