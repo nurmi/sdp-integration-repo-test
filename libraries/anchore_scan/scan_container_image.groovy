@@ -71,9 +71,9 @@ def get_image_vulnerabilities(config, user, pass, image) {
   def vulnerabilities = null
   ArrayList ret_vulnerabilities = null
   String url = null
-  
+
+  http_result = "anchore_results/anchore_vulnerabilities.json"
   try {
-    http_result = "anchore_results/anchore_vulnerabilities.json"
     url = "${anchore_engine_base_url}/images/${image.imageDigest}dd/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}' 2>curl.err"
     vulnerabilities = this.parse_json(http_result)
@@ -84,7 +84,9 @@ def get_image_vulnerabilities(config, user, pass, image) {
         throw new Exception ("ERROR response from Anchore Engine")
     }
   } catch (any) {
+    println("HERE: ${http_result}")
     if ( (new File(http_result)).exists()) {
+    println("HEREHERE: ${http_result}")    
       sh "mv ${http_result} anchore_results/last_error.response"
     }
     throw any
