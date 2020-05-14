@@ -9,35 +9,37 @@ def parse_json(input_file) {
 }
 
 def add_image(config, user, pass, img) {
-    		  String anchore_engine_base_url = config.anchore_engine_url
-		  int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
-                  Boolean done = false
-		  Boolean success = false
+  String anchore_engine_base_url = config.anchore_engine_url
+  int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
+  Boolean done = false
+  Boolean success = false
+  def ret_image = null
+  String url 
+  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
+  def input_image_json = JsonOutput.toJson(input_image)
 
-                  url = "${anchore_engine_base_url}/images"
-		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
-		  def input_image_json = JsonOutput.toJson(input_image)
-		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-		  def new_image = this.parse_json("new_image.json")[0]
-		  def ret_image = null
- 		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
-		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
-  		    while(!done) {
-		      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
-		      def new_image_check = this.parse_json("new_image_check.json")[0]
-		      if (new_image_check.analysis_status == "analyzed") {
-		        done = true
-			success = true
-			ret_image = new_image_check
-		      } else if ( new_image_check.analysis_status == "analysis_failed") {
-		        done = true
-			success = false
-		      } else {
-		        println("image not yet analyzed - status is ${new_image_check.analysis_status}")
-			sleep 5
-		      }
-		    }
-		  }
+  url = "${anchore_engine_base_url}/images"
+  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
+  def new_image = this.parse_json("new_image.json")[0]
+  
+  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
+  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
+    while(!done) {
+      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
+      def new_image_check = this.parse_json("new_image_check.json")[0]
+      if (new_image_check.analysis_status == "analyzed") {
+        done = true
+        success = true
+        ret_image = new_image_check
+      } else if ( new_image_check.analysis_status == "analysis_failed") {
+        done = true
+        success = false
+      } else {
+        println("image not yet analyzed - status is ${new_image_check.analysis_status}")
+        sleep 5
+      }
+    }
+  }
   return [success, ret_image]
 }
 
