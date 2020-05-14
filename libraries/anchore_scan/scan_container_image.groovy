@@ -107,7 +107,7 @@ String anchore_engine_base_url = config.anchore_engine_url
   
   try {
     http_result = "anchore_results/anchore_policy_evaluations.json"
-    url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=false&tag=${input_image_fulltag}"
+    url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=true&tag=${input_image_fulltag}"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
     /*
     String cmd = "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
