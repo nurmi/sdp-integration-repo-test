@@ -10,6 +10,29 @@ def parse_json(input_file) {
     //return (ret)
 }
 
+def add_image(new_image) {
+		  Boolean done = false
+		  Boolean success = false
+ 		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
+		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
+  		    while(!done) {
+		      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
+		      def new_image_check = this.parse_json("new_image_check.json")[0]
+		      sh "echo ${new_image_check.analysis_status}"
+		      if (new_image_check.analysis_status == "analyzed") {
+		        done = true
+			success = true
+		      } else if ( new_image_check.analysis_status == "analysis_failed") {
+		        done = true
+			success = false
+		      } else {
+		        sh "echo image not yet analyzed - status is ${new_image_check.analysis_status}"
+		      }
+		    }
+		  }
+  return(success)
+}
+
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
@@ -27,21 +50,11 @@ void call(){
 		  def input_image_json = JsonOutput.toJson(input_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-
 		  def new_image = this.parse_json("new_image.json")[0]
-		  Boolean done = false
- 		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
-		  timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
-  		    while(!done) {
-		      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
-		      def new_image_check = this.parse_json("new_image_check.json")[0]
-		      sh "echo ${new_image_check.analysis_status}"
-		      if (new_image_check.analysis_status == "analyzed") {
-		        done = true
-		      } else {
-		        sh "echo image not yet analyzed - status is ${new_image_check.analysis_status}"
-		      }
-		    }   
+
+		  success = this.add_image(new_image)
+		  if (success) {
+		    sh "echo Image analysis successful"
 		  }
                 }
 	}  	 
