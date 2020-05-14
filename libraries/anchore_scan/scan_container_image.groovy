@@ -84,11 +84,15 @@ def get_image_vulnerabilities(config, user, pass, image) {
         throw new Exception ("ERROR response from Anchore Engine")
     }
   } catch (any) {
-    sh "mv {http_result} anchore_results/last_error.engineresponse"
+    try {
+      sh "mv {http_result} anchore_results/last_error.engineresponse"
+    } catch (ignore) {
+    }
     throw any
   } finally {
-    if ( (new File("curl.err")).exists()) {
+    try {
       sh "mv curl.err anchore_results/last_error.curl"
+    } catch (ignore) {
     }
   }
   return [success, ret_vulnerabilities]
