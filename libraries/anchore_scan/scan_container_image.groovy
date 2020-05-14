@@ -74,9 +74,11 @@ def get_image_vulnerabilities(config, user, pass, image) {
   
   try {
     http_result = "anchore_results/anchore_vulnerabilities.json"
-    url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' --bklargh --stderr curl.err -o ${http_result} '${url}'"
+    url = "${anchore_engine_base_url}/images/${image.imageDigest}dd/vuln/all?vendor_only=True"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}' 2>curl.err"
     vulnerabilities = this.parse_json(http_result)
+    ret_vulnerabilities = vulnerabilities.vulnerabilities
+    success = true
   } catch (any) {
     if ( (new File(http_result)).exists()) {
       sh "mv ${http_result} anchore_results/last_error.response"
@@ -86,10 +88,6 @@ def get_image_vulnerabilities(config, user, pass, image) {
     if ( (new File("curl.err")).exists()) {
       sh "mv curl.err anchore_results/last_error.curl"
     }
-  }
-  if (vulnerabilities) {
-    success = true
-    ret_vulnerabilities = vulnerabilities.vulnerabilities
   }
   return [success, ret_vulnerabilities]
 }
