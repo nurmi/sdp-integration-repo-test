@@ -18,16 +18,26 @@ def add_image(config, user, pass, input_image_fulltag) {
   String image_digest
   def input_image = [tag: "${input_image_fulltag}"]
   def input_image_json = JsonOutput.toJson(input_image)
-
+  http_result = "new_anchore_image.json"
   try {
     url = "${anchore_engine_base_url}/images"
-    http_result = "new_anchore_image.json"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST --stderr curl.err -o ${http_result} '${url}' -d '${input_image_json}'"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o ${http_result} '${url}' -d '${input_image_json}' 2>curl.err"
     def new_image = this.parse_json(http_result)[0]
     image_digest = new_image.imageDigest
+    if (!image_digest) {
+      throw new Exception("Error response from Anchore Engine")
+    }
   } catch (any) {
-    println ("Unable to add image to Anchore Engine - exception ${any}")
+    try {
+      sh "mv ${http_result} anchore_results/last_error.engineresponse"
+    } catch (ignore) {
+    }
     throw any
+  } finally {
+    try {
+      sh "mv curl.err anchore_results/last_error.curl"
+    } catch (ignore) {
+    }
   }
   
 
@@ -35,9 +45,9 @@ try {
   url = "${anchore_engine_base_url}/images/${image_digest}"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
+      http_result = "new_anchore_image_check.json"
       try {
-        http_result = "new_anchore_image_check.json"
-        sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET --stderr curl.err -o ${http_result} '${url}'"
+        sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o ${http_result} '${url}' 2>curl.err"
         def new_image_check = this.parse_json(http_result)[0]
         if (new_image_check.analysis_status == "analyzed") {
           done = true
@@ -61,7 +71,16 @@ try {
    println("Timed out or error waiting for image to reach analyzed state")
    success = false
    ret_image = null
- }
+   try {
+     sh "mv ${http_result} anchore_results/last_error.engineresponse"
+   } catch (ignore) {
+   }
+ } finally {
+   try {
+     sh "mv curl.err anchore_results/last_error.curl"
+   } catch (ignore) {
+   }
+ } 
  return [success, ret_image]
 }
 
@@ -85,7 +104,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
     }
   } catch (any) {
     try {
-      sh "mv {http_result} anchore_results/last_error.engineresponse"
+      sh "mv ${http_result} anchore_results/last_error.engineresponse"
     } catch (ignore) {
     }
     throw any
