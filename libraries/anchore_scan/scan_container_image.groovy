@@ -58,9 +58,10 @@ def get_image_vulnerabilities(config, user, pass, image) {
   String url = null
   
   try {
+    http_result = "anchore_results/anchore_vulnerabilities.json"
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > anchore_result_vulnerabilities.json"
-    archiveArtifacts 'anchore_result_vulnerabilities.json'
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
+
     vulnerabilities = this.parse_json("anchore_result_vulnerabilities.json")
   } catch (any) {
     throw any
@@ -70,6 +71,11 @@ def get_image_vulnerabilities(config, user, pass, image) {
     ret_vulnerabilities = vulnerabilities.vulnerabilities
   }
   return [success, ret_vulnerabilities]
+}
+
+def initialize_workspace(config) {
+  sh "mkdir -p anchore_results"
+  return(true)
 }
 
 void call(){
@@ -82,8 +88,13 @@ void call(){
 
   stage("Scanning Container Image: Anchore Scan"){
     node{
-        withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
+           try {
+              withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
+		def archive_only = config.archive_only ?: false
+
+		this.initialize_workspace(config)
+
                 images.each { img ->
 		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
@@ -112,7 +123,13 @@ void call(){
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		  }
                 }
-	}  	 
+		
+	  }
+  	} catch (any) {
+	  throw any
+	} finally {
+	  archiveArtifacts allowEmptyArchive: true, artifacts: 'anchore_results/'
+	}
       }
     }
   }
