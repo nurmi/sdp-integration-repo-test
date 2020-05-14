@@ -24,6 +24,7 @@ def add_image(config, user, pass, img) {
     def new_image = this.parse_json("new_image.json")[0]
   } catch (any) {
     error "Unable to add image to Anchore Engine - exception ${any}"
+    throw any
   }
   
   url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
