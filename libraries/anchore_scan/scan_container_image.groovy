@@ -13,8 +13,7 @@ def add_image(config, user, pass, img) {
 		  int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
                   Boolean done = false
 		  Boolean success = false
-		  
-		  
+
                   url = "${anchore_engine_base_url}/images"
 		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
 		  def input_image_json = JsonOutput.toJson(input_image)
@@ -44,8 +43,11 @@ def add_image(config, user, pass, img) {
 
 def get_image_vulnerabilities(config, user, pass, image) {
   String anchore_engine_base_url = config.anchore_engine_url
-  success = false
-  vulnerabilities = ret_vulnerabilities = null
+  Boolean success = false
+  def vulnerabilities = null
+  ArrayList ret_vulnerabilities = null
+  String url = null
+  
   try {
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' ${url} > anchore_result_vulnerabilities.json"
