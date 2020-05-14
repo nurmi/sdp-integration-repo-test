@@ -88,8 +88,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
 }
 
 def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
-  println("HERE")
-String anchore_engine_base_url = config.anchore_engine_url
+  String anchore_engine_base_url = config.anchore_engine_url
   String anchore_policy_bundle_file = config.policy_bundle ?: null
   Boolean success = false
   def evaluations = null
@@ -171,7 +170,6 @@ void call(){
                     }
                     
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
-		    /*
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
 		      evaluation_result = "Anchore Image Scan Policy Evaluation Results\n*****\n"
@@ -182,7 +180,7 @@ void call(){
 		    if (!archive_only) {
 		      println(evaluation_result)
 	            }
-		    */
+		    
 		    
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
