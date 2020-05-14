@@ -84,11 +84,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
         throw new Exception ("ERROR response from Anchore Engine")
     }
   } catch (any) {
-    println("HERE: ${http_result}")
-    if ( (new File(http_result)).exists()) {
-    println("HEREHERE: ${http_result}")    
-      sh "mv ${http_result} anchore_results/last_error.response"
-    }
+    sh "cat ${http_result}"
     throw any
   } finally {
     if ( (new File("curl.err")).exists()) {
