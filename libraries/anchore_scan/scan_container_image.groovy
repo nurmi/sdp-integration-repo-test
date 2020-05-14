@@ -182,14 +182,23 @@ void call(){
 		      println("Image policy evaluation report generation complete")
       		      String final_action = evaluations.final_action
 
-		      evaluation_result = "Anchore Image Scan Policy Evaluation Results\n*****\n"
+		      evaluation_result =  "Anchore Image Scan Policy Evaluation Results\n"
+		      evaluation_result += "********************************************\n"
+		      evaluation_result += "Gate".padRight(12, ' ')+"\t" + "Trigger".padRight(12, ' ') + "\t" + "Action".padRight(6, ' ') + "\t" + "Details\n"
+		      evaluations.rows.each { eval ->
+		      	egate = eval[3].padRight(12, ' ')
+			etrigger = eval[4].padRight(12, ' ')
+			eaction = eval[6].padRight(6, ' ')
+			edetail = eval[5]
+			evaluation_result += "${egate}\t${etrigger}\t${eaction}\t${edetail}"
+		      }
+
 		      if (bail_on_fail) {
 		        // check policy eval final action and exit if STOP
 			if (final_action == "stop" || final_action == 'STOP') {
 			  error "Anchore policy evaluation resulted in STOP action - failing scan."
 			}
 		      }			
-		      evaluation_result += "${evaluations}"
 		    } else {
 		      evaluation_result = "No evaluations to report\n"
 		    }
