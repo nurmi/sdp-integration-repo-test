@@ -71,7 +71,14 @@ def get_image_vulnerabilities(config, user, pass, image) {
   }
   return [success, ret_vulnerabilities]
 }
+
 void call(){
+  if (!config.anchore_engine_url) {
+    error "The anchore_engine_url parameter must be set in the library configuration."
+  } else if (!config.fred) {
+    error "Credentials for accessing Anchore Engine must be set in the library configuration."
+  }
+
   stage("Scanning Container Image: Anchore Scan"){
     node{
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
@@ -86,12 +93,17 @@ void call(){
 
 		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
-		    println("Image vulnerabilities report generated")
+		    println("Image vulnerabilities report generation complete")
 		    vulnerability_result = "Anchore Image Scan Vulnerability Results\n*****\n"
-		    vulnerabilities.each {
-		      vulnerability_result += "${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}\n"
-		    }
-		    println(vulnerability_result)
+		    if (vulnerabilities) {
+		      vulnerabilities.each {
+		        vulnerability_result += "${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}\n"
+		      }
+		    } else {
+		      vulnerability_result += "No vulnerabilities detected\n"
+		      if (!archive_only) {
+		        println(vulnerability_result)
+                      }
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		  }
