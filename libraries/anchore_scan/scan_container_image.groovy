@@ -22,7 +22,7 @@ def add_image(config, user, pass, input_image_fulltag) {
   try {
     url = "${anchore_engine_base_url}/images"
     http_result = "new_anchore_image.json"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o ${http_result} ${url} -d '${input_image_json}'"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST -o ${http_result} '${url}' -d '${input_image_json}'"
     def new_image = this.parse_json(http_result)[0]
     image_digest = new_image.imageDigest
   } catch (any) {
@@ -37,7 +37,7 @@ try {
     while(!done) {
       try {
         http_result = "new_anchore_image_check.json"
-        sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o ${http_result} ${url}"
+        sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET -o ${http_result} '${url}'"
         def new_image_check = this.parse_json(http_result)[0]
         if (new_image_check.analysis_status == "analyzed") {
           done = true
@@ -75,7 +75,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
   try {
     http_result = "anchore_results/anchore_vulnerabilities.json"
     url = "${anchore_engine_base_url}/images/${image.imageDigest}/vuln/all?vendor_only=True"
-    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} ${url}"
+    sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
     vulnerabilities = this.parse_json(http_result)
   } catch (any) {
     throw any
@@ -101,21 +101,19 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
     policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
     policy_bundle_id = policy_bundle.id
   }
-    println("THERE")
   String image_digest = image.imageDigest
   
   try {
     http_result = "anchore_results/anchore_policy_evaluations.json"
     url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=true&tag=${input_image_fulltag}"
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}'"
-    sh "cat ${http_result}"
     evaluations = this.parse_json(http_result)
   } catch (any) {
     throw any
   }
   if (evaluations) {
     success = true
-    ret_evaluations = evaluations
+    ret_evaluations = evaluations[0].image_digest.input_image_fulltag
   }
   return [success, ret_evaluations]
 }
