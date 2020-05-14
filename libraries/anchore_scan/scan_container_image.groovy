@@ -89,17 +89,19 @@ def get_image_vulnerabilities(config, user, pass, image) {
 
 def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   String anchore_engine_base_url = config.anchore_engine_url
-  String anchore_policy_bundle_file = config.policy_bundle ?: ""
+  String anchore_policy_bundle_file = config.policy_bundle ?: null
   Boolean success = false
   def evaluations = null
   ArrayList ret_evaluations = null
   String url = null
   String policy_bundle_id = null
   def policy_bundle = null
+  println("HERE")
   if (anchore_policy_bundle_file) {
     policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
     policy_bundle_id = policy_bundle.id
   }
+    println("THERE")
   String image_digest = image.imageDigest
   
   try {
@@ -165,8 +167,9 @@ void call(){
                     if (!archive_only) {
 		        println(vulnerability_result)
                     }
-                    /*
+                    
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
+		    /*
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
 		      evaluation_result = "Anchore Image Scan Policy Evaluation Results\n*****\n"
