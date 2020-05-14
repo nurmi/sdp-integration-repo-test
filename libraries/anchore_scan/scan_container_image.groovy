@@ -142,6 +142,7 @@ void call(){
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
 		def archive_only = config.archive_only ?: false
+		def bail_on_fail = config.fail_on_eval_stop ?: false
 
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
@@ -155,10 +156,12 @@ void call(){
 		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
 		    println("Image vulnerabilities report generation complete")
-		    vulnerability_result = "Anchore Image Scan Vulnerability Results\n*****\n"
+		    vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
+		    vulnerability_result += "****************************************\n\n"
 		    if (vulnerabilities) {
+		      vulnerability_result += "VulnID\tSeverity\tPackage\tVersion\tType\tFix Available\tLink"
 		      vulnerabilities.each { vuln ->
-		        vulnerability_result += "${vuln.vuln} ${vuln.severity} ${vuln.package_name} ${vuln.package_version} ${vuln.package_type}\n"
+		        vulnerability_result += "${vuln.vuln}\t${vuln.severity}\t${vuln.package_name}\t${vuln.package_version}\t${vuln.package_type}\t${vuln.fix}\t${vuln.url}\n"
 		      }
 		    } else {
 		      vulnerability_result += "No vulnerabilities detected\n"
@@ -171,7 +174,15 @@ void call(){
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
+      		      String final_action = evaluations.final_action
+
 		      evaluation_result = "Anchore Image Scan Policy Evaluation Results\n*****\n"
+		      if (bail_on_fail) {
+		        // check policy eval final action and exit if STOP
+			if (final_action == "stop" || final_action == 'STOP') {
+			  error "Anchore policy evaluation resulted in STOP action - failing scan."
+			}
+		      }			
 		      evaluation_result += "${evaluations}"
 		    } else {
 		      evaluation_result = "No evaluations to report\n"
@@ -180,7 +191,6 @@ void call(){
 		      println(evaluation_result)
 	            }
 		    
-		    
 		  } else {
 		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		  }
@@ -188,7 +198,6 @@ void call(){
 		
 	  }
   	} catch (any) {
-	  println("ERR here: ${any}")
 	  throw any
 	} finally {
 	  archiveArtifacts allowEmptyArchive: true, artifacts: 'anchore_results/'
