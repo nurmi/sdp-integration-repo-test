@@ -18,7 +18,6 @@ def add_image(config, user, pass, img) {
                   url = "${anchore_engine_base_url}/images"
 		  def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
 		  def input_image_json = JsonOutput.toJson(input_image)
-		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
 		  def new_image = this.parse_json("new_image.json")[0]
 		  def ret_image = null
@@ -27,7 +26,6 @@ def add_image(config, user, pass, img) {
   		    while(!done) {
 		      sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X GET ${url} > new_image_check.json"
 		      def new_image_check = this.parse_json("new_image_check.json")[0]
-		      sh "echo ${new_image_check.analysis_status}"
 		      if (new_image_check.analysis_status == "analyzed") {
 		        done = true
 			success = true
@@ -36,7 +34,7 @@ def add_image(config, user, pass, img) {
 		        done = true
 			success = false
 		      } else {
-		        sh "echo image not yet analyzed - status is ${new_image_check.analysis_status}"
+		        println("image not yet analyzed - status is ${new_image_check.analysis_status}")
 			sleep 5
 		      }
 		    }
@@ -56,7 +54,7 @@ def get_image_vulnerabilities(config, user, pass, image) {
   } catch (any) {
     throw any
   }
-  if (vulnerabilities && vulnerabilities.vulnerabilities) {
+  if (vulnerabilities) {
     success = true
     ret_vulnerabilities = vulnerabilities.vulnerabilities
   }
@@ -68,28 +66,25 @@ void call(){
         //String anchore_engine_base_url = config.anchore_engine_url ?: null
 	//int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
-                //String url = "${anchore_engine_base_url}/system/"
-		//sh "echo curl -u '${user}:${pass}' ${url}"
-		//sh "curl -u '${user}:${pass}' ${url}"
-
                 def images = get_images_to_build()
                 images.each{ img ->
 		  (success, new_image) = this.add_image(config, user, pass, img)
 		  if (success) {
 		    println("Image analysis successful")
-		    //println("${new_image}")
+		  } else {
+		    error "Failed to add image to Anchore Engine for analysis"
 		  }
 
 		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		  if (success) {
 		    println("Image vulnerabilities report generated")
-		    //println("${vulnerabilities}")
 		    vulnerability_result = "Anchore Image Scan Vulnerability Results\n*****\n"
 		    vulnerabilities.each {
 		      vulnerability_result += "${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}\n"
-		      //println("${it.vuln} ${it.severity} ${it.package_name} ${it.package_version} ${it.package_type}")
 		    }
 		    println(vulnerability_result)
+		  } else {
+		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		  }
                 }
 	}  	 
