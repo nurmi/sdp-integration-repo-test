@@ -18,7 +18,7 @@ def add_image(config, user, pass, img) {
   def input_image = [tag: "${img.registry}/${img.repo}:${img.tag}"]
   def input_image_json = JsonOutput.toJson(input_image)
 
-  url = "${anchore_engine_base_url}/images"
+  url = "${anchore_engine_base_url}/imagessss"
   sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
   def new_image = this.parse_json("new_image.json")[0]
   
@@ -67,8 +67,6 @@ def get_image_vulnerabilities(config, user, pass, image) {
 void call(){
   stage("Scanning Container Image: Anchore Scan"){
     node{
-        //String anchore_engine_base_url = config.anchore_engine_url ?: null
-	//int anchore_image_wait_timeout = config.image_wait_timeout ?: 300
         withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
                 images.each{ img ->
