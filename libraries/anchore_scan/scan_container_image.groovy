@@ -32,7 +32,7 @@ def add_image(config, user, pass, img) {
   
 
 try {
-  url = "${anchore_engine_base_url}/images/${image_digest}"
+  url = "${anchore_engine_base_url}/images/${image_digest}/blargh"
   timeout(time: anchore_image_wait_timeout, unit: 'SECONDS') {
     while(!done) {
       try {
