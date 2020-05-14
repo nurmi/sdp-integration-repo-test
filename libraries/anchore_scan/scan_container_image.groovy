@@ -5,9 +5,9 @@
 import groovy.json.*
 
 def parse_json(input_file) {
-    //return readJSON(file: "${input_file}")
-    def ret = [analysis_status: "analyzed", imageDigest: 'sha256:a0e1f3334315165b1e75ee28d62f48b1623a8ad31ad3c9b99f964ed750cbd1ba']
-    return (ret)
+    return readJSON(file: "${input_file}")
+    //def ret = [analysis_status: "analyzed", imageDigest: 'sha256:a0e1f3334315165b1e75ee28d62f48b1623a8ad31ad3c9b99f964ed750cbd1ba']
+    //return (ret)
 }
 
 void call(){
@@ -26,8 +26,8 @@ void call(){
 		  def input_image_json = JsonOutput.toJson(input_image)
 		  sh "echo curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}'"		  
 		  sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -X POST ${url} -d '${input_image_json}' > new_image.json"
-
-		  def new_image = parse_json("new_image.json")
+          	  archiveArtifacts 'new_image.json'
+		  def new_image = this.parse_json("new_image.json")
 		  Boolean done = false
  		  url = "${anchore_engine_base_url}/images/${new_image.imageDigest}"		  
 		  while(!done) {
