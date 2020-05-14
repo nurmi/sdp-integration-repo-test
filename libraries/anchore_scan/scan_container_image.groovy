@@ -181,6 +181,7 @@ void call(){
 		
 	  }
   	} catch (any) {
+	  println("ERR here: ${any}")
 	  throw any
 	} finally {
 	  archiveArtifacts allowEmptyArchive: true, artifacts: 'anchore_results/'
