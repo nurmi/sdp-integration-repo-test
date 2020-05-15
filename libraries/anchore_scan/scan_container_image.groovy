@@ -29,15 +29,10 @@ def add_image(config, user, pass, input_image_fulltag) {
     }
   } catch (any) {
     try {
-      sh "mv ${http_result} anchore_results/last_error.engineresponse"
+      sh "cat curl.err ${http_result}"    
     } catch (ignore) {
     }
     throw any
-  } finally {
-    try {
-      sh "mv curl.err anchore_results/last_error.curl"
-    } catch (ignore) {
-    }
   }
   
 
@@ -72,12 +67,7 @@ try {
    success = false
    ret_image = null
    try {
-     sh "mv ${http_result} anchore_results/last_error.engineresponse"
-   } catch (ignore) {
-   }
- } finally {
-   try {
-     sh "mv curl.err anchore_results/last_error.curl"
+     sh "cat curl.err ${http_result}"       
    } catch (ignore) {
    }
  } 
@@ -104,15 +94,10 @@ def get_image_vulnerabilities(config, user, pass, image) {
     }
   } catch (any) {
     try {
-      sh "mv ${http_result} anchore_results/last_error.engineresponse"
+      sh "cat curl.err ${http_result}"           
     } catch (ignore) {
     }
     throw any
-  } finally {
-    try {
-      sh "mv curl.err anchore_results/last_error.curl"
-    } catch (ignore) {
-    }
   }
   return [success, ret_vulnerabilities]
 }
@@ -143,15 +128,10 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
     success = true
   } catch (any) {
     try {
-      sh "mv ${http_result} anchore_results/last_error.engineresponse"
+      sh "cat curl.err ${http_result}"               
     } catch (ignore) {
     }
     throw any
-  } finally {
-    try {
-      sh "mv curl.err anchore_results/last_error.curl"
-    } catch (ignore) {
-    }
   }
 
   return [success, ret_evaluations]
