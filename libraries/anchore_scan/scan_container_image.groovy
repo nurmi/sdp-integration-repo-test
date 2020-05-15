@@ -161,6 +161,8 @@ void call(){
                 def images = get_images_to_build()
 		def archive_only = config.archive_only ?: false
 		def bail_on_fail = config.fail_on_eval_stop ?: false
+		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
+		def perform_policy_eval = config.perform_policy_evaluation ?: true
 
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
@@ -171,7 +173,7 @@ void call(){
 		    error "Failed to add image to Anchore Engine for analysis"
 		  }
 
-		  if (config.perform_vulnerability_scan) {
+		  if (perform_vuln_scan) {
 		  
 		    (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		    if (success) {
@@ -200,7 +202,7 @@ void call(){
 		      error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		    }
 		  }
-                  if (config.perform_policy_evaluation) {  
+                  if (perform_policy_eval) {  
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
