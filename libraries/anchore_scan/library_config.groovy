@@ -8,5 +8,7 @@ fields{
 	archive_only = Boolean
 	bail_on_fail = Boolean
 	policy_bundle = String
+	perform_vulnerability_scan = Boolean
+	perform_policy_evaluation = Boolean
     }
 }

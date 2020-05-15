@@ -171,64 +171,69 @@ void call(){
 		    error "Failed to add image to Anchore Engine for analysis"
 		  }
 
-		  (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
-		  if (success) {
-		    println("Image vulnerabilities report generation complete")
-		    vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
-		    vulnerability_result += "****************************************\n\n"
-		    if (vulnerabilities) {
-		      vulnerability_result += "VulnID".padRight(16, ' ')+"\t" + "Severity".padRight(12, ' ') + "\t" + "Package".padRight(30, ' ') + "\t" + "Type".padRight(6, ' ') + "\t" + "Fix Available".padRight(12, ' ') + "\tLink\n"
-		      vulnerabilities.each { vuln ->
-		      	vid = vuln.vuln.padRight(16, ' ')
-			vsev = vuln.severity.padRight(12, ' ')
-			vpkg = vuln.package.padRight(30, ' ') 
-			vtype = vuln.package_type.padRight(6, ' ')
-			vfix = vuln.fix.padRight(12, ' ')
-			vurl = vuln.url
-		        vulnerability_result += "${vid}\t${vsev}\t${vpkg}\t${vtype}\t${vfix}\t${vurl}\n"
+		  if (config.perform_vulnerability_scan) {
+		  
+		    (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
+		    if (success) {
+		      println("Image vulnerabilities report generation complete")
+		      vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
+		      vulnerability_result += "****************************************\n\n"
+		      if (vulnerabilities) {
+		        vulnerability_result += "VulnID".padRight(16, ' ')+"\t" + "Severity".padRight(12, ' ') + "\t" + "Package".padRight(30, ' ') + "\t" + "Type".padRight(6, ' ') + "\t" + "Fix Available".padRight(12, ' ') + "\tLink\n"
+		        vulnerabilities.each { vuln ->
+		          vid = vuln.vuln.padRight(16, ' ')
+			  vsev = vuln.severity.padRight(12, ' ')
+			  vpkg = vuln.package.padRight(30, ' ') 
+			  vtype = vuln.package_type.padRight(6, ' ')
+			  vfix = vuln.fix.padRight(12, ' ')
+			  vurl = vuln.url
+		          vulnerability_result += "${vid}\t${vsev}\t${vpkg}\t${vtype}\t${vfix}\t${vurl}\n"
+		        }
+		      } else {
+		        vulnerability_result += "No vulnerabilities detected\n"
 		      }
-		    } else {
-		      vulnerability_result += "No vulnerabilities detected\n"
-		    }
 
-                    if (!archive_only) {
+                      if (!archive_only) {
 		        println(vulnerability_result)
-                    }
-                    
+                      }
+		    } else {
+		      error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
+		    }
+		  }
+                  if (config.perform_policy_evaluation) {  
                     (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
       		      String final_action = evaluations.final_action
+		      if (evaluations) {
+		        evaluation_result =  "Anchore Image Scan Policy Evaluation Results\n"
+		        evaluation_result += "********************************************\n"
+		        evaluation_result += "Gate".padRight(12, ' ')+"\t" + "Trigger".padRight(12, ' ') + "\t" + "Action".padRight(6, ' ') + "\t" + "Details\n"
+		        evaluations.rows.each { eval ->
+		      	  egate = eval[3].padRight(12, ' ')
+			  etrigger = eval[4].padRight(12, ' ')
+			  eaction = eval[6].padRight(6, ' ')
+			  edetail = eval[5]
+			  evaluation_result += "${egate}\t${etrigger}\t${eaction}\t${edetail}"
+		        }
 
-		      evaluation_result =  "Anchore Image Scan Policy Evaluation Results\n"
-		      evaluation_result += "********************************************\n"
-		      evaluation_result += "Gate".padRight(12, ' ')+"\t" + "Trigger".padRight(12, ' ') + "\t" + "Action".padRight(6, ' ') + "\t" + "Details\n"
-		      evaluations.rows.each { eval ->
-		      	egate = eval[3].padRight(12, ' ')
-			etrigger = eval[4].padRight(12, ' ')
-			eaction = eval[6].padRight(6, ' ')
-			edetail = eval[5]
-			evaluation_result += "${egate}\t${etrigger}\t${eaction}\t${edetail}"
+		        if (bail_on_fail) {
+		          // check policy eval final action and exit if STOP
+			  if (final_action == "stop" || final_action == 'STOP') {
+			    error "Anchore policy evaluation resulted in STOP action - failing scan."
+			  }
+		        }
+		      } else {
+		        evaluation_result = "No evaluations to report\n"
 		      }
-
-		      if (bail_on_fail) {
-		        // check policy eval final action and exit if STOP
-			if (final_action == "stop" || final_action == 'STOP') {
-			  error "Anchore policy evaluation resulted in STOP action - failing scan."
-			}
-		      }			
+		      if (!archive_only) {
+		        println(evaluation_result)
+	              }
 		    } else {
-		      evaluation_result = "No evaluations to report\n"
-		    }
-		    if (!archive_only) {
-		      println(evaluation_result)
-	            }
-		    
-		  } else {
-		    error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
+		      error "Failed to retrieve policy evaluation results from Anchore Engine from analyzed image"
+		    }		    
 		  }
-                }
-		
+              }
 	  }
   	} catch (any) {
 	  throw any
