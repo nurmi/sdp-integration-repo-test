@@ -163,6 +163,7 @@ void call(){
 		def bail_on_fail = config.fail_on_eval_stop ?: false
 		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
 		def perform_policy_eval = config.perform_policy_evaluation ?: true
+		sh "env"
 		sh "ls -la"
 		sh "ls -la .."
                 images.each { img ->
