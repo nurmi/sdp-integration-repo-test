@@ -153,6 +153,10 @@ def initialize_workspace(config) {
 }
 
 void call(){
+  sh "env"
+  sh "ls -la"
+  sh "ls -la .."
+
   this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
@@ -164,9 +168,6 @@ void call(){
 		def bail_on_fail = config.fail_on_eval_stop ?: false
 		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
 		def perform_policy_eval = config.perform_policy_evaluation ?: true
-		sh "env"
-		sh "ls -la"
-		sh "ls -la .."
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  (success, new_image) = this.add_image(config, user, pass, input_image_fulltag)
