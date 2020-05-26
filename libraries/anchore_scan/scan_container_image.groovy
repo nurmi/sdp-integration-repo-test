@@ -157,8 +157,8 @@ void call(){
                 def images = get_images_to_build()
 		def archive_only = false
 		def bail_on_fail = false
-		def perform_vuln_scan = true
-		def perform_policy_eval = true
+		def perf_vuln_scan = true
+		def perf_policy_eval = true
 
 		if (config.archive_only != null) {
 		   archive_only = config.archive_only
@@ -186,7 +186,7 @@ void call(){
 		    error "Failed to add image to Anchore Engine for analysis"
 		  }
 
-		  if (perform_vuln_scan) {
+		  if (perf_vuln_scan) {
 		    success = false
 		    timeout(time: 1200, unit: 'SECONDS') {
 		      (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
@@ -217,7 +217,7 @@ void call(){
 		      error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		    }
 		  }
-                  if (perform_policy_eval) {
+                  if (perf_policy_eval) {
 		    success = false
 		    timeout(time: 1200, unit: 'SECONDS') {		  
                       (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
