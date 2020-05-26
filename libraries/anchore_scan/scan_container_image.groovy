@@ -155,11 +155,24 @@ void call(){
            try {
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
-		def archive_only = config.archive_only ?: false
-		def bail_on_fail = config.bail_on_fail ?: false
-		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
-		def perform_policy_eval = config.perform_policy_evaluation ?: true
-		println("MEH ${perform_vuln_scan} oo ${perform_policy_eval}")
+		def archive_only = false
+		def bail_on_fail = false
+		def perform_vuln_scan = true
+		def perform_policy_eval = true
+
+		if (config.archive_only != null) {
+		   archive_only = config.archive_only
+		}
+		if (config.bail_on_fail != null) {
+		   bail_on_fail = config.bail_on_fail
+		}
+		if (config.perform_vulnerability_scan != null) {
+		   perf_vuln_scan = config.perform_vulnerability_scan
+		}
+		if (config.perform_policy_evaluation != null) {
+		   perf_policy_eval = config.perform_policy_evaluation 
+		}		
+
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  success = false
