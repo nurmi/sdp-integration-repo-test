@@ -159,6 +159,7 @@ void call(){
 		def bail_on_fail = config.bail_on_fail ?: false
 		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
 		def perform_policy_eval = config.perform_policy_evaluation ?: true
+		println("MEH ${perform_vuln_scan} oo ${perform_policy_eval}")
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  success = false
