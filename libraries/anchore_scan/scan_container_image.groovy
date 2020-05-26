@@ -160,7 +160,7 @@ void call(){
   this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
-    node{
+//    node{
            try {
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
@@ -246,6 +246,6 @@ void call(){
 	} finally {
 	  archiveArtifacts allowEmptyArchive: true, artifacts: 'anchore_results/'
 	}
-      }
+//      }
     }
   }
