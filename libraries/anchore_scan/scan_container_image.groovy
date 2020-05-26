@@ -147,14 +147,10 @@ def initialize_workspace(config) {
 }
 
 void call(){
-  sh "env"
-  sh "ls -la"
 
   this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
-      sh "env"
-      sh "ls -la"
            try {
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
@@ -165,7 +161,7 @@ void call(){
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  success = false
-		  timeout(time: 1, unit: 'SECONDS') {		  		  
+		  timeout(time: 1200, unit: 'SECONDS') {		  		  
 		    (success, new_image) = this.add_image(config, user, pass, input_image_fulltag)
 		  }
 		  if (success) {
@@ -176,7 +172,7 @@ void call(){
 
 		  if (perform_vuln_scan) {
 		    success = false
-		    timeout(time: 1, unit: 'SECONDS') {
+		    timeout(time: 1200, unit: 'SECONDS') {
 		      (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
 		    }
 		    if (success) {
@@ -207,7 +203,7 @@ void call(){
 		  }
                   if (perform_policy_eval) {
 		    success = false
-		    timeout(time: 1, unit: 'SECONDS') {		  
+		    timeout(time: 1200, unit: 'SECONDS') {		  
                       (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
 		    }
 		    if (success) {
@@ -250,3 +246,4 @@ void call(){
 	}
     }
   }
+  
