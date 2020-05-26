@@ -147,6 +147,7 @@ def initialize_workspace(config) {
   // TODO add more input validation
   
   sh "mkdir -p anchore_results"
+  unstash "workspace"
   
   return(true)
 }
