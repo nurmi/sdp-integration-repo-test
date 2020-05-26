@@ -104,26 +104,27 @@ def get_image_vulnerabilities(config, user, pass, image) {
 
 def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   String anchore_engine_base_url = config.anchore_engine_url
-  String anchore_policy_bundle_file = config.policy_bundle ?: null
+  String anchore_policy_id = config.policy_id ?: null
   Boolean success = false
   def evaluations = null
   def ret_evaluations = null
   String url = null
-  String policy_bundle_id = null
-  def policy_bundle = null
+  
+//  String policy_bundle_id = null
+//  def policy_bundle = null
+//  if (anchore_policy_id) {
+//    policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
+//    policy_bundle_id = policy_bundle.id
+//  }
 
-  if (anchore_policy_bundle_file) {
-    policy_bundle = readJSON(file: "${anchore_policy_bundle_file}")
-    policy_bundle_id = policy_bundle.id
-  }
   String image_digest = image.imageDigest
   String image_id = image.image_detail[0].imageId
   
   http_result = "anchore_results/anchore_policy_evaluations.json"
   try {
     url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=true&tag=${input_image_fulltag}"
-    if (policy_bundle_id) {
-      url += "&policyId=${policy_bundle_id}"
+    if (anchore_policy_id) {
+      url += "&policyId=${anchore_policy_id}"
     }
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}' 2>curl.err"
     evaluations = this.parse_json(http_result)
