@@ -144,10 +144,8 @@ def initialize_workspace(config) {
     error "Credentials for accessing Anchore Engine must be set in the library configuration."
   }
 
-  // TODO add more input validation
-  
   sh "mkdir -p anchore_results"
-  unstash "workspace"
+  //unstash "workspace"
   
   return(true)
 }
@@ -159,7 +157,6 @@ void call(){
   this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
-//    node{
       sh "env"
       sh "ls -la"
            try {
@@ -247,6 +244,5 @@ void call(){
 	} finally {
 	  archiveArtifacts allowEmptyArchive: true, artifacts: 'anchore_results/'
 	}
-//      }
     }
   }
