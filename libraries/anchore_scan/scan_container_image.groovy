@@ -173,6 +173,7 @@ void call(){
 		   perf_policy_eval = config.perform_policy_evaluation 
 		}		
 
+		println("MEH ${archive_only} oo ${bail_on_fail} oo ${perf_policy_eval} oo ${perf_vuln_scan}")
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  success = false
