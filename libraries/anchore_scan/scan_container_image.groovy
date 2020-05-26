@@ -164,7 +164,10 @@ void call(){
 		def perform_policy_eval = config.perform_policy_evaluation ?: true
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
-		  (success, new_image) = this.add_image(config, user, pass, input_image_fulltag)
+		  success = false
+		  timeout(time: 1200, unit: 'SECONDS') {		  		  
+		    (success, new_image) = this.add_image(config, user, pass, input_image_fulltag)
+		  }
 		  if (success) {
 		    println("Image analysis successful")
 		  } else {
@@ -172,8 +175,10 @@ void call(){
 		  }
 
 		  if (perform_vuln_scan) {
-		  
-		    (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
+		    success = false
+		    timeout(time: 1200, unit: 'SECONDS') {
+		      (success, vulnerabilities) = this.get_image_vulnerabilities(config, user, pass, new_image)
+		    }
 		    if (success) {
 		      println("Image vulnerabilities report generation complete")
 		      vulnerability_result =  "Anchore Image Scan Vulnerability Results\n"
@@ -200,8 +205,11 @@ void call(){
 		      error "Failed to retrieve vulnerability results from Anchore Engine from analyzed image"
 		    }
 		  }
-                  if (perform_policy_eval) {  
-                    (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
+                  if (perform_policy_eval) {
+		    success = false
+		    timeout(time: 1200, unit: 'SECONDS') {		  
+                      (success, evaluations) = get_image_evaluations(config, user, pass, new_image, input_image_fulltag)
+		    }
 		    if (success) {
 		      println("Image policy evaluation report generation complete")
       		      String final_action = evaluations.final_action
