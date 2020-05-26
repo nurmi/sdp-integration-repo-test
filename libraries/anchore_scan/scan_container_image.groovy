@@ -155,6 +155,9 @@ void call(){
            try {
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
+		def anchore_engine_base_url = config.anchore_engine_url
+		def anchore_policy_id = config.policy_id ?: null
+		def image_wait_timeout = config.image_wait_timeout ?: 300
 		def archive_only = false
 		def bail_on_fail = false
 		def perf_vuln_scan = true
@@ -173,7 +176,7 @@ void call(){
 		   perf_policy_eval = config.perform_policy_evaluation 
 		}		
 
-		println("MEH ${archive_only} oo ${bail_on_fail} oo ${perf_policy_eval} oo ${perf_vuln_scan}")
+		println("Library Configuration: anchore_engine_url=${anchore_engine_base_url} image_wait_timeout=${image_wait_timeout} policy_id=${anchore_policy_id} archive_only=${archive_only} bail_on_fail=${bail_on_fail} perform_policy_evaluation=${perf_policy_eval} perform_vulnerability_scan=${perf_vuln_scan}")
                 images.each { img ->
 		  def input_image_fulltag = "${img.registry}/${img.repo}:${img.tag}"
 		  success = false
