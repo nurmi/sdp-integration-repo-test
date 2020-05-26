@@ -224,7 +224,8 @@ void call(){
 
 		        if (bail_on_fail) {
 		          // check policy eval final action and exit if STOP
-			  if (final_action == "stop" || final_action == 'STOP') {
+			  //if (final_action == "stop" || final_action == 'STOP') {
+			  if (final_action == "warn" || final_action == 'WARN') {
 			    error "Anchore policy evaluation resulted in STOP action - failing scan."
 			  }
 		        }
