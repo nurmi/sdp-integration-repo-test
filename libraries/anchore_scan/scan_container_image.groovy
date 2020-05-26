@@ -156,7 +156,7 @@ void call(){
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
 		def archive_only = config.archive_only ?: false
-		def bail_on_fail = config.fail_on_eval_stop ?: false
+		def bail_on_fail = config.bail_on_fail ?: false
 		def perform_vuln_scan = config.perform_vulnerability_scan ?: true
 		def perform_policy_eval = config.perform_policy_evaluation ?: true
                 images.each { img ->
