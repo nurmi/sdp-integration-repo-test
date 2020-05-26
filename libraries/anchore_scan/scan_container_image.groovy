@@ -122,6 +122,9 @@ def get_image_evaluations(config, user, pass, image, input_image_fulltag) {
   http_result = "anchore_results/anchore_policy_evaluations.json"
   try {
     url = "${anchore_engine_base_url}/images/${image_digest}/check?history=false&detail=true&tag=${input_image_fulltag}"
+    if (policy_bundle_id) {
+      url += "&policyId=${policy_bundle_id}"
+    }
     sh "curl -u '${user}':'${pass}' -H 'content-type: application/json' -o ${http_result} '${url}' 2>curl.err"
     evaluations = this.parse_json(http_result)
     ret_evaluations = evaluations[0]["${image_digest}"]["${input_image_fulltag}"]["detail"]["result"]["result"][0]["${image_id}"]["result"]
