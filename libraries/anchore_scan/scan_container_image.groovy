@@ -155,12 +155,13 @@ def initialize_workspace(config) {
 void call(){
   sh "env"
   sh "ls -la"
-  sh "ls -la .."
 
   this.initialize_workspace(config)
 
   stage("Scanning Container Image: Anchore Scan"){
 //    node{
+      sh "env"
+      sh "ls -la"
            try {
               withCredentials([usernamePassword(credentialsId: config.cred, passwordVariable: 'pass', usernameVariable: 'user')]) {
                 def images = get_images_to_build()
